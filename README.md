@@ -5,7 +5,7 @@ A fast, clean web app for browsing and listening to Formula 1 team radio communi
 
 Built with vanilla HTML, CSS, and JavaScript. No frameworks, no build step, no API key required.
 
-**[→ Live App](https://your-netlify-url.netlify.app)**
+**[→ Live App](https://hamradio.netlify.app)**
 
 ---
 
