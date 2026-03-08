@@ -639,41 +639,44 @@ function setAccent(colour) {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function loadAllDrivers() {
-  const seen = new Map();
-  const years = [2023, 2024, 2025, 2026];
+  // Use the fallback list immediately so the UI is responsive,
+  // then silently enrich with live data from a known session per year.
+  populateDriverSelect(FALLBACK_DRIVERS);
 
-  for (const yr of years) {
+  const anchorSessions = [
+    { yr: 2023, key: 9161 },  // Singapore 2023 Race
+    { yr: 2024, key: 9636 },  // Abu Dhabi 2024 Race
+    { yr: 2025, key: 9839 },  // Abu Dhabi 2025 Race
+  ];
+
+  const seen = new Map();
+  // Seed with fallback so we always have something
+  for (const d of FALLBACK_DRIVERS) seen.set(d.number, { ...d, year: 0 });
+
+  for (const { yr, key } of anchorSessions) {
     try {
-      const res = await fetch(`${API}/drivers?year=${yr}`);
-      if (res.status === 429) {
-        await sleep(2000);
-        const retry = await fetch(`${API}/drivers?year=${yr}`);
-        if (retry.ok) mergeDrivers(seen, await retry.json(), yr);
-      } else if (res.ok) {
-        mergeDrivers(seen, await res.json(), yr);
+      await sleep(400);
+      const res = await fetch(`${API}/drivers?session_key=${key}`);
+      if (!res.ok) continue;
+      const drivers = await res.json();
+      for (const d of drivers) {
+        const existing = seen.get(d.driver_number);
+        if (!existing || yr > (existing.year || 0)) {
+          seen.set(d.driver_number, {
+            number: d.driver_number,
+            name: d.full_name || `Driver ${d.driver_number}`,
+            acronym: d.name_acronym || '',
+            team: d.team_name || '',
+            year: yr
+          });
+        }
       }
-    } catch(e) { /* network error, skip year */ }
-    await sleep(450); // stay within 3 req/s rate limit
+    } catch(e) { /* skip */ }
   }
 
   const drivers = Array.from(seen.values()).sort((a,b) => a.name.localeCompare(b.name));
-  populateDriverSelect(drivers.length ? drivers : FALLBACK_DRIVERS);
-  if (drivers.length) state.allDrivers = drivers;
-}
-
-function mergeDrivers(seen, drivers, yr) {
-  for (const d of drivers) {
-    const existing = seen.get(d.driver_number);
-    if (!existing || yr > existing.year) {
-      seen.set(d.driver_number, {
-        number: d.driver_number,
-        name: d.full_name || `Driver ${d.driver_number}`,
-        acronym: d.name_acronym || '',
-        team: d.team_name || '',
-        year: yr
-      });
-    }
-  }
+  state.allDrivers = drivers;
+  populateDriverSelect(drivers);
 }
 
 const FALLBACK_DRIVERS = [
