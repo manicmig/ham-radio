@@ -484,8 +484,10 @@
         <div class="card-meta" id="gpCount">–</div>
       </div>
       <div style="display:flex;border-bottom:1px solid var(--border-hi);">
-        <button id="yr2025" onclick="switchYear(2025)" style="flex:1;padding:9px 4px;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:2px;background:var(--red);border:none;border-right:1px solid var(--border-hi);color:#fff;cursor:pointer;">2025</button>
-        <button id="yr2026" onclick="switchYear(2026)" style="flex:1;padding:9px 4px;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:2px;background:var(--panel2);border:none;color:var(--dim);cursor:pointer;">2026</button>
+        <button id="yr2023" onclick="switchYear(2023)" style="flex:1;padding:9px 2px;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;background:var(--panel2);border:none;border-right:1px solid var(--border-hi);color:var(--dim);cursor:pointer;">2023</button>
+        <button id="yr2024" onclick="switchYear(2024)" style="flex:1;padding:9px 2px;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;background:var(--panel2);border:none;border-right:1px solid var(--border-hi);color:var(--dim);cursor:pointer;">2024</button>
+        <button id="yr2025" onclick="switchYear(2025)" style="flex:1;padding:9px 2px;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;background:var(--red);border:none;border-right:1px solid var(--border-hi);color:#fff;cursor:pointer;">2025</button>
+        <button id="yr2026" onclick="switchYear(2026)" style="flex:1;padding:9px 2px;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;background:var(--panel2);border:none;color:var(--dim);cursor:pointer;">2026</button>
       </div>
       <div class="race-list" id="raceList">
         <div class="loading">
@@ -626,10 +628,10 @@ async function switchYear(yr) {
   activeSession = null;
 
   // Update tab styles
-  document.getElementById('yr2025').style.background = yr === 2025 ? 'var(--red)' : 'var(--panel2)';
-  document.getElementById('yr2025').style.color = yr === 2025 ? '#fff' : 'var(--dim)';
-  document.getElementById('yr2026').style.background = yr === 2026 ? 'var(--red)' : 'var(--panel2)';
-  document.getElementById('yr2026').style.color = yr === 2026 ? '#fff' : 'var(--dim)';
+  [2023, 2024, 2025, 2026].forEach(y => {
+    document.getElementById('yr' + y).style.background = yr === y ? 'var(--red)' : 'var(--panel2)';
+    document.getElementById('yr' + y).style.color = yr === y ? '#fff' : 'var(--dim)';
+  });
 
   // Reset content
   document.getElementById('entries').innerHTML = '<div class="empty"><div class="empty-icon">📡</div><div class="empty-txt">Select a Grand Prix then<br>choose a session</div></div>';
