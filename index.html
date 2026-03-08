@@ -636,66 +636,69 @@ function setAccent(colour) {
 }
 
 // ── DRIVERS ────────────────────────────────────────────────────────────────
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 async function loadAllDrivers() {
-  try {
-    // Fetch drivers from all relevant years and deduplicate by driver number
-    const years = [2023, 2024, 2025, 2026];
-    const allRaw = [];
+  const seen = new Map();
+  const years = [2023, 2024, 2025, 2026];
 
-    for (const yr of years) {
-      try {
-        const res = await fetch(`${API}/drivers?session_key=latest`);
-        // We'll use a more reliable approach: fetch per-year from meetings
-      } catch(e) {}
+  for (const yr of years) {
+    try {
+      const res = await fetch(`${API}/drivers?year=${yr}`);
+      if (res.status === 429) {
+        await sleep(2000);
+        const retry = await fetch(`${API}/drivers?year=${yr}`);
+        if (retry.ok) mergeDrivers(seen, await retry.json(), yr);
+      } else if (res.ok) {
+        mergeDrivers(seen, await res.json(), yr);
+      }
+    } catch(e) { /* network error, skip year */ }
+    await sleep(450); // stay within 3 req/s rate limit
+  }
+
+  const drivers = Array.from(seen.values()).sort((a,b) => a.name.localeCompare(b.name));
+  populateDriverSelect(drivers.length ? drivers : FALLBACK_DRIVERS);
+  if (drivers.length) state.allDrivers = drivers;
+}
+
+function mergeDrivers(seen, drivers, yr) {
+  for (const d of drivers) {
+    const existing = seen.get(d.driver_number);
+    if (!existing || yr > existing.year) {
+      seen.set(d.driver_number, {
+        number: d.driver_number,
+        name: d.full_name || `Driver ${d.driver_number}`,
+        acronym: d.name_acronym || '',
+        team: d.team_name || '',
+        year: yr
+      });
     }
-
-    // Better approach: get drivers from a known broad session search
-    // Fetch drivers from multiple years
-    const seen = new Map();
-
-    for (const yr of years) {
-      try {
-        const res = await fetch(`${API}/drivers?year=${yr}`);
-        if (!res.ok) continue;
-        const drivers = await res.json();
-        for (const d of drivers) {
-          if (!seen.has(d.driver_number)) {
-            seen.set(d.driver_number, {
-              number: d.driver_number,
-              name: d.full_name || `Driver ${d.driver_number}`,
-              acronym: d.name_acronym || '',
-              team: d.team_name || '',
-              year: yr
-            });
-          } else {
-            // Update with more recent year data
-            const existing = seen.get(d.driver_number);
-            if (yr > existing.year) {
-              seen.set(d.driver_number, {
-                number: d.driver_number,
-                name: d.full_name || existing.name,
-                acronym: d.name_acronym || existing.acronym,
-                team: d.team_name || existing.team,
-                year: yr
-              });
-            }
-          }
-        }
-      } catch(e) { /* skip year */ }
-    }
-
-    const drivers = Array.from(seen.values())
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    state.allDrivers = drivers;
-    populateDriverSelect(drivers);
-
-  } catch(e) {
-    console.error('Failed to load drivers:', e);
-    // Fallback: populate with just Hamilton so app still works
-    populateDriverSelect([{ number: 44, name: 'Lewis Hamilton', acronym: 'HAM', team: 'Ferrari' }]);
   }
 }
+
+const FALLBACK_DRIVERS = [
+  {number:1,name:'Max Verstappen',acronym:'VER',team:'Red Bull Racing'},
+  {number:2,name:'Logan Sargeant',acronym:'SAR',team:'Williams'},
+  {number:3,name:'Daniel Ricciardo',acronym:'RIC',team:'RB'},
+  {number:4,name:'Lando Norris',acronym:'NOR',team:'McLaren'},
+  {number:10,name:'Pierre Gasly',acronym:'GAS',team:'Alpine'},
+  {number:11,name:'Sergio Perez',acronym:'PER',team:'Red Bull Racing'},
+  {number:12,name:'Kimi Antonelli',acronym:'ANT',team:'Mercedes'},
+  {number:14,name:'Fernando Alonso',acronym:'ALO',team:'Aston Martin'},
+  {number:16,name:'Charles Leclerc',acronym:'LEC',team:'Ferrari'},
+  {number:18,name:'Lance Stroll',acronym:'STR',team:'Aston Martin'},
+  {number:20,name:'Kevin Magnussen',acronym:'MAG',team:'Haas'},
+  {number:22,name:'Yuki Tsunoda',acronym:'TSU',team:'RB'},
+  {number:23,name:'Alexander Albon',acronym:'ALB',team:'Williams'},
+  {number:24,name:'Zhou Guanyu',acronym:'ZHO',team:'Kick Sauber'},
+  {number:27,name:'Nico Hulkenberg',acronym:'HUL',team:'Haas'},
+  {number:31,name:'Esteban Ocon',acronym:'OCO',team:'Alpine'},
+  {number:44,name:'Lewis Hamilton',acronym:'HAM',team:'Ferrari'},
+  {number:55,name:'Carlos Sainz',acronym:'SAI',team:'Williams'},
+  {number:63,name:'George Russell',acronym:'RUS',team:'Mercedes'},
+  {number:77,name:'Valtteri Bottas',acronym:'BOT',team:'Kick Sauber'},
+  {number:81,name:'Oscar Piastri',acronym:'PIA',team:'McLaren'},
+].sort((a,b) => a.name.localeCompare(b.name));
 
 function populateDriverSelect(drivers) {
   const sel = document.getElementById('driverSelect');
