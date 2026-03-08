@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HAM RADIO — Lewis Hamilton 2026</title>
+<title>HAM RADIO — Lewis Hamilton</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
@@ -414,7 +414,7 @@
     <div class="num">44</div>
     <div class="driver-info">
       <h1>Lewis Hamilton</h1>
-      <p>Ferrari · 2026 Season</p>
+      <p>Ferrari · 2025 / 2026</p>
     </div>
     <div class="sep"></div>
     <div class="status" id="status">Select a race weekend</div>
@@ -426,8 +426,12 @@
   <div class="sidebar">
     <div class="card">
       <div class="card-head">
-        <div class="card-title">2026 Calendar</div>
+        <div class="card-title">Calendar</div>
         <div class="card-meta" id="gpCount">–</div>
+      </div>
+      <div style="display:flex;border-bottom:1px solid var(--border-hi);">
+        <button id="yr2025" onclick="switchYear(2025)" style="flex:1;padding:9px 4px;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:2px;background:var(--red);border:none;border-right:1px solid var(--border-hi);color:#fff;cursor:pointer;">2025</button>
+        <button id="yr2026" onclick="switchYear(2026)" style="flex:1;padding:9px 4px;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:2px;background:var(--panel2);border:none;color:var(--dim);cursor:pointer;">2026</button>
       </div>
       <div class="race-list" id="raceList">
         <div class="loading">
@@ -520,7 +524,7 @@
 <script>
 const API = 'https://api.openf1.org/v1';
 const DRIVER = 44;
-const YEAR = 2026;
+let YEAR = 2025;
 
 let meetings = [];
 let openKey = null;
@@ -554,6 +558,36 @@ function fmtAudio(s) {
 function fmtDate(s) {
   if (!s) return '';
   return new Date(s).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+}
+
+// Switch year
+async function switchYear(yr) {
+  YEAR = yr;
+  openKey = null;
+  sessionCache = {};
+  messages = [];
+  filtered = [];
+  currentIdx = -1;
+  activeMeeting = null;
+  activeSession = null;
+
+  // Update tab styles
+  document.getElementById('yr2025').style.background = yr === 2025 ? 'var(--red)' : 'var(--panel2)';
+  document.getElementById('yr2025').style.color = yr === 2025 ? '#fff' : 'var(--dim)';
+  document.getElementById('yr2026').style.background = yr === 2026 ? 'var(--red)' : 'var(--panel2)';
+  document.getElementById('yr2026').style.color = yr === 2026 ? '#fff' : 'var(--dim)';
+
+  // Reset content
+  document.getElementById('entries').innerHTML = '<div class="empty"><div class="empty-icon">📡</div><div class="empty-txt">Select a Grand Prix then<br>choose a session</div></div>';
+  document.getElementById('logMeta').textContent = 'No session loaded';
+  document.getElementById('statMsgs').textContent = '–';
+  document.getElementById('statAudio').textContent = '–';
+  document.getElementById('statSess').textContent = '–';
+  document.getElementById('status').textContent = 'Select a race weekend';
+  document.getElementById('playerMsg').textContent = 'Select a race weekend then choose a session';
+  document.getElementById('playerMsg').classList.add('empty');
+
+  await switchYear(2025);
 }
 
 // Load calendar
@@ -663,6 +697,16 @@ async function loadRadio(sessionKey, sessionName, btn) {
 
   try {
     const res = await fetch(`${API}/team_radio?session_key=${sessionKey}&driver_number=${DRIVER}`);
+    if (res.status === 404) {
+      messages = [];
+      document.getElementById('statMsgs').textContent = '0';
+      document.getElementById('statAudio').textContent = '0';
+      document.getElementById('statSess').textContent = sessionName.replace('Practice 1','FP1').replace('Practice 2','FP2').replace('Practice 3','FP3').replace('Qualifying','QUALI').replace('Race','RACE').replace('Sprint','SPR');
+      document.getElementById('status').textContent = `${activeMeeting?.meeting_name} · ${sessionName}`;
+      document.getElementById('logMeta').textContent = 'No data yet';
+      document.getElementById('entries').innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-txt">No radio data available yet<br>for this session</div></div>`;
+      return;
+    }
     if (!res.ok) throw new Error(`Status ${res.status}`);
     const radio = await res.json();
     radio.sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -791,7 +835,7 @@ audio.addEventListener('ended', () => {
   setTimeout(() => nextEntry(), 400);
 });
 
-init();
+switchYear(2025);
 </script>
 </body>
 </html>
