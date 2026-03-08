@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAM RADIO — F1 Team Radio Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e8002d;
+    --red-dim: #7a0015;
+    --bg: #050508;
+    --bg3: #0f0f18;
+    --panel: #111120;
+    --panel2: #181828;
+    --border: #1e1e35;
+    --border-bright: #2a2a4a;
+    --text: #c8cce0;
+    --text-dim: #555570;
+    --text-bright: #eeeeff;
+    --cyan: #00d4ff;
+    --cyan-dim: #003d4d;
+    --accent: #e8002d;
+    --accent-glow: rgba(232,0,45,0.5);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+    pointer-events: none; z-index: 1000;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(5,5,8,0.97);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-bright);
+    padding: 0 24px;
+  }
+
+  .header-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: flex; align-items: center; gap: 16px; height: 64px;
+  }
+
+  .app-brand {
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+
+  .app-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px; font-weight: 900;
+    color: var(--accent); letter-spacing: 4px;
+    text-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .app-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; color: var(--text-dim);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .header-sep { width: 1px; height: 36px; background: var(--border-bright); flex-shrink: 0; }
+
+  /* DRIVER SELECTOR in header */
+  .driver-selector-wrap {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .driver-num-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px; font-weight: 900;
+    line-height: 1; transition: all 0.3s;
+    text-shadow: 0 0 16px currentColor;
+    min-width: 52px; text-align: center;
+  }
+
+  .driver-details { display: flex; flex-direction: column; }
+
+  .driver-name-display {
+    font-family: 'Orbitron', monospace;
+    font-size: 12px; font-weight: 700;
+    color: var(--text-bright); letter-spacing: 2px;
+    text-transform: uppercase; white-space: nowrap;
+  }
+
+  .driver-team-display {
+    font-size: 11px; color: var(--text-dim);
+    letter-spacing: 1px; text-transform: uppercase; margin-top: 1px;
+  }
+
+  .driver-select-wrap { position: relative; }
+
+  .driver-select {
+    background: var(--panel);
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+    padding: 7px 32px 7px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; outline: none; cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+    min-width: 200px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555570'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    transition: border-color 0.15s;
+  }
+
+  .driver-select:hover, .driver-select:focus { border-color: var(--cyan); }
+  .driver-select option { background: #0a0a10; }
+
+  .status-bar { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0; }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+  .status-pill.live .dot { background: #ff0040; box-shadow: 0 0 8px #ff0040; animation: blink 1s ease-in-out infinite; }
+
+  @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+  .nav-tabs { display: flex; gap: 4px; margin-left: auto; flex-shrink: 0; }
+
+  .nav-tab {
+    font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    padding: 6px 16px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-dim); cursor: pointer;
+    transition: all 0.15s;
+    clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  }
+
+  .nav-tab:hover { border-color: var(--border-bright); color: var(--text); }
+  .nav-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* LAYOUT */
+  .main {
+    position: relative; z-index: 1;
+    max-width: 1400px; margin: 0 auto; padding: 24px;
+    display: grid; grid-template-columns: 300px 1fr;
+    gap: 16px; align-items: start;
+  }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+
+  .panel::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent); opacity: 0.4;
+  }
+
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.3);
+  }
+
+  .panel-title {
+    font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--cyan);
+  }
+
+  .panel-meta { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); }
+
+  /* SIDEBAR */
+  .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+  .year-tabs { display: flex; border-bottom: 1px solid var(--border); }
+
+  .year-tab {
+    flex: 1; padding: 10px 4px;
+    background: transparent; border: none;
+    border-right: 1px solid var(--border);
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim); font-family: 'Orbitron', monospace;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    text-align: center; transition: all 0.15s; letter-spacing: 1px;
+  }
+
+  .year-tab:last-child { border-right: none; }
+  .year-tab:hover { background: var(--bg3); color: var(--text); }
+  .year-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(232,0,45,0.07); }
+
+  .race-list-scroll { overflow-y: auto; max-height: calc(100vh - 220px); }
+  .race-list-scroll::-webkit-scrollbar { width: 3px; }
+  .race-list-scroll::-webkit-scrollbar-track { background: transparent; }
+  .race-list-scroll::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+
+  .race-weekend { border-bottom: 1px solid var(--border); }
+
+  .race-weekend-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer; transition: background 0.12s;
+  }
+
+  .race-weekend-header:hover { background: rgba(255,255,255,0.02); }
+  .race-weekend.open .race-weekend-header { background: rgba(0,212,255,0.04); }
+
+  .rw-round {
+    font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700;
+    color: var(--text-dim); min-width: 20px; text-align: center; flex-shrink: 0;
+  }
+
+  .race-weekend.open .rw-round { color: var(--cyan); }
+
+  .rw-info { flex: 1; min-width: 0; }
+
+  .rw-name {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .race-weekend.open .rw-name { color: var(--cyan); }
+
+  .rw-sub { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-dim); margin-top: 1px; }
+
+  .rw-date { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
+
+  .rw-chevron { font-size: 8px; color: var(--text-dim); transition: transform 0.2s; flex-shrink: 0; }
+  .race-weekend.open .rw-chevron { transform: rotate(90deg); color: var(--cyan); }
+
+  .session-buttons {
+    display: none; flex-wrap: wrap; gap: 5px;
+    padding: 8px 14px 12px 44px;
+    background: rgba(0,0,0,0.25); border-top: 1px solid var(--border);
+    animation: fadeDown 0.15s ease;
+  }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  .race-weekend.open .session-buttons { display: flex; }
+
+  .sess-btn {
+    padding: 4px 11px;
+    background: var(--bg); border: 1px solid var(--border-bright);
+    color: var(--text-dim); font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; letter-spacing: 1px; cursor: pointer;
+    text-transform: uppercase; transition: all 0.12s; white-space: nowrap;
+  }
+
+  .sess-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .sess-btn.active { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
+  .sess-btn.loading { opacity: 0.6; pointer-events: none; }
+
+  .sess-loading {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim);
+  }
+
+  .mini-spin { width: 10px; height: 10px; border: 1px solid var(--border-bright); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* CONTENT */
+  .content-area { display: flex; flex-direction: column; gap: 16px; }
+
+  /* LIVE */
+  .live-panel { background: var(--panel); border: 1px solid var(--border); border-top: 2px solid var(--accent); padding: 16px; display: none; }
+  .live-panel.visible { display: block; }
+
+  .live-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: blink 1s infinite; }
+  .live-title { font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; }
+  .live-session-info { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-dim); margin-left: auto; }
+
+  .stop-btn { background: none; border: 1px solid var(--border-bright); color: var(--text-dim); padding: 4px 10px; font-family: 'Share Tech Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.15s; letter-spacing: 1px; }
+  .stop-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .live-entries { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+  .live-entry { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; background: rgba(232,0,45,0.05); border: 1px solid rgba(232,0,45,0.15); animation: fadeDown 0.3s ease; }
+  .live-time { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--accent); white-space: nowrap; }
+  .live-text { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--text); flex: 1; }
+  .live-play-btn { background: none; border: 1px solid var(--red-dim); color: var(--accent); font-size: 11px; padding: 2px 6px; cursor: pointer; font-family: 'Share Tech Mono', monospace; transition: all 0.15s; white-space: nowrap; }
+  .live-play-btn:hover { background: rgba(232,0,45,0.15); }
+
+  /* STATS */
+  .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .stat-item { background: var(--panel); padding: 12px 16px; text-align: center; }
+  .stat-value { font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 700; color: var(--text-bright); line-height: 1; transition: color 0.3s; }
+  .stat-label { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+
+  /* NOW PLAYING */
+  .now-playing { background: var(--panel2); border: 1px solid var(--border); padding: 20px; position: relative; overflow: hidden; }
+  .now-playing::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+
+  .np-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .np-label { font-family: 'Orbitron', monospace; font-size: 8px; font-weight: 700; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; transition: color 0.3s; }
+  .np-context { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
+  .np-message { font-size: 16px; font-weight: 500; color: var(--text-bright); line-height: 1.5; min-height: 26px; }
+  .np-message.empty { color: var(--text-dim); font-style: italic; font-size: 14px; }
+
+  .waveform-wrap { margin: 14px 0 10px; display: flex; align-items: center; gap: 12px; }
+  .waveform { flex: 1; height: 36px; display: flex; align-items: center; gap: 2px; }
+  .waveform-bar { flex: 1; background: var(--border-bright); border-radius: 1px; transition: background 0.3s; }
+  .waveform.playing .waveform-bar { background: var(--accent); animation: wave 0.6s ease-in-out infinite; }
+  .waveform.playing .waveform-bar:nth-child(2n) { animation-delay: 0.12s; }
+  .waveform.playing .waveform-bar:nth-child(3n) { animation-delay: 0.22s; }
+  .waveform.playing .waveform-bar:nth-child(5n) { animation-delay: 0.35s; }
+  @keyframes wave { 0%,100%{height:4px} 50%{height:26px} }
+
+  .time-display { font-family: 'Share Tech Mono', monospace; font-size: 13px; color: var(--text-dim); white-space: nowrap; }
+
+  .progress-bar-wrap { height: 3px; background: var(--border); cursor: pointer; margin-bottom: 12px; }
+  .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
+
+  .controls { display: flex; align-items: center; gap: 12px; }
+  .ctrl-btn { background: var(--bg); border: 1px solid var(--border-bright); color: var(--text); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all 0.15s; }
+  .ctrl-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .ctrl-btn.primary { background: var(--accent); border-color: var(--accent); color: white; width: 44px; height: 44px; font-size: 18px; transition: all 0.3s; }
+  .ctrl-btn.primary:hover { filter: brightness(1.2); box-shadow: 0 0 16px var(--accent-glow); }
+
+  .vol-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); }
+  .vol-slider { -webkit-appearance: none; appearance: none; width: 80px; height: 3px; background: var(--border-bright); outline: none; cursor: pointer; }
+  .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--cyan); cursor: pointer; clip-path: polygon(50% 0%, 100% 100%, 0% 100%); }
+
+  /* RADIO LOG */
+  .radio-log { display: flex; flex-direction: column; }
+  .log-controls { display: flex; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); align-items: center; }
+  .search-box { flex: 1; background: var(--bg); border: 1px solid var(--border-bright); color: var(--text); padding: 6px 10px; font-family: 'Share Tech Mono', monospace; font-size: 12px; outline: none; transition: border-color 0.15s; }
+  .search-box:focus { border-color: var(--cyan); }
+  .search-box::placeholder { color: var(--text-dim); }
+
+  .filter-btn { background: var(--bg); border: 1px solid var(--border-bright); color: var(--text-dim); padding: 6px 12px; font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; white-space: nowrap; }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--cyan); color: var(--cyan); }
+
+  .radio-entries { overflow-y: auto; max-height: 440px; }
+  .radio-entries::-webkit-scrollbar { width: 3px; }
+  .radio-entries::-webkit-scrollbar-track { background: transparent; }
+  .radio-entries::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+
+  .radio-entry { display: grid; grid-template-columns: 90px 1fr auto; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; position: relative; }
+  .radio-entry::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: transparent; transition: background 0.1s; }
+  .radio-entry:hover { background: rgba(0,212,255,0.03); }
+  .radio-entry:hover::before { background: var(--cyan-dim); }
+  .radio-entry.active { background: rgba(0,212,255,0.06); }
+  .radio-entry.active::before { background: var(--accent); }
+
+  .entry-time { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-dim); }
+  .entry-text { font-size: 13px; color: var(--text); font-family: 'Share Tech Mono', monospace; }
+  .radio-entry.active .entry-text { color: var(--text-bright); }
+
+  .entry-play { width: 28px; height: 28px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text-dim); flex-shrink: 0; transition: all 0.12s; }
+  .radio-entry:hover .entry-play { border-color: var(--cyan); color: var(--cyan); }
+  .radio-entry.active .entry-play { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; gap: 14px; color: var(--text-dim); }
+  .loading-spinner { width: 28px; height: 28px; border: 2px solid var(--border-bright); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .loading-text { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; gap: 10px; color: var(--text-dim); }
+  .empty-icon { font-size: 28px; opacity: 0.3; }
+  .empty-text { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 1px; text-align: center; line-height: 1.8; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--panel2); border: 1px solid var(--border-bright); border-left: 3px solid var(--cyan); padding: 10px 16px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text); z-index: 200; opacity: 0; transform: translateY(10px); transition: all 0.3s; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  audio { display: none; }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .race-list-scroll { max-height: 320px; }
+    .header-inner { flex-wrap: wrap; height: auto; padding: 10px 0; gap: 10px; }
+    .driver-select { min-width: 160px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="app-brand">
+      <div>
+        <div class="app-name">HAM RADIO</div>
+        <div class="app-sub">F1 Team Radio Archive</div>
+      </div>
+    </div>
+
+    <div class="header-sep"></div>
+
+    <!-- Driver selector -->
+    <div class="driver-selector-wrap">
+      <div class="driver-num-badge" id="driverNumBadge" style="color: var(--accent);">44</div>
+      <div class="driver-details">
+        <div class="driver-name-display" id="driverNameDisplay">Lewis Hamilton</div>
+        <div class="driver-team-display" id="driverTeamDisplay">Loading...</div>
+      </div>
+      <div class="driver-select-wrap" style="margin-left:10px;">
+        <select class="driver-select" id="driverSelect" onchange="onDriverChange()">
+          <option value="">Loading drivers...</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="header-sep"></div>
+
+    <div class="status-bar">
+      <div class="status-pill" id="statusPill">
+        <div class="dot"></div>
+        <span id="statusText">SELECT SESSION</span>
+      </div>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('archive')">Archive</button>
+      <button class="nav-tab" onclick="switchTab('live')">Live</button>
+    </nav>
+  </div>
+</header>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Calendar</div>
+        <div class="panel-meta" id="gpCount">–</div>
+      </div>
+      <div class="year-tabs">
+        <button class="year-tab" onclick="selectYear(2026,this)">2026</button>
+        <button class="year-tab" onclick="selectYear(2025,this)">2025</button>
+        <button class="year-tab active" onclick="selectYear(2024,this)">2024</button>
+        <button class="year-tab" onclick="selectYear(2023,this)">2023</button>
+      </div>
+      <div class="race-list-scroll" id="raceList">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <div class="loading-text">Loading calendar...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-area">
+
+    <!-- Live panel -->
+    <div class="live-panel" id="livePanel">
+      <div class="live-header">
+        <div class="live-dot"></div>
+        <div class="live-title">Live Radio Feed</div>
+        <div class="live-session-info" id="liveSessionInfo">Polling OpenF1...</div>
+        <button class="stop-btn" onclick="stopLive()">■ Stop</button>
+      </div>
+      <div class="live-entries" id="liveEntries">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);padding:8px;">Waiting for latest session data...</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-value" id="statTotal">–</div><div class="stat-label">Radio Msgs</div></div>
+      <div class="stat-item"><div class="stat-value" id="statAudio">–</div><div class="stat-label">With Audio</div></div>
+      <div class="stat-item"><div class="stat-value" id="statSession">–</div><div class="stat-label">Session</div></div>
+      <div class="stat-item"><div class="stat-value" id="statYear">–</div><div class="stat-label">Season</div></div>
+    </div>
+
+    <!-- Now Playing -->
+    <div class="now-playing">
+      <div class="np-top">
+        <div class="np-label" id="npLabel">◈ Now Playing</div>
+        <div class="np-context" id="npContext">–</div>
+      </div>
+      <div class="np-message empty" id="npMessage">Select a driver, race weekend, and session to load radio</div>
+      <div class="waveform-wrap">
+        <div class="waveform" id="waveform">
+          <div class="waveform-bar" style="height:4px"></div>
+          <div class="waveform-bar" style="height:10px"></div>
+          <div class="waveform-bar" style="height:4px"></div>
+          <div class="waveform-bar" style="height:14px"></div>
+          <div class="waveform-bar" style="height:6px"></div>
+          <div class="waveform-bar" style="height:18px"></div>
+          <div class="waveform-bar" style="height:4px"></div>
+          <div class="waveform-bar" style="height:22px"></div>
+          <div class="waveform-bar" style="height:10px"></div>
+          <div class="waveform-bar" style="height:16px"></div>
+          <div class="waveform-bar" style="height:4px"></div>
+          <div class="waveform-bar" style="height:12px"></div>
+          <div class="waveform-bar" style="height:20px"></div>
+          <div class="waveform-bar" style="height:6px"></div>
+          <div class="waveform-bar" style="height:4px"></div>
+          <div class="waveform-bar" style="height:14px"></div>
+          <div class="waveform-bar" style="height:8px"></div>
+          <div class="waveform-bar" style="height:4px"></div>
+          <div class="waveform-bar" style="height:18px"></div>
+          <div class="waveform-bar" style="height:6px"></div>
+        </div>
+        <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+      </div>
+      <div class="progress-bar-wrap" onclick="seekAudio(event)">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <div class="controls">
+        <button class="ctrl-btn" onclick="playPrev()">⏮</button>
+        <button class="ctrl-btn primary" id="playPauseBtn" onclick="togglePlay()">▶</button>
+        <button class="ctrl-btn" onclick="playNext()">⏭</button>
+        <span class="vol-label" style="margin-left:8px;">VOL</span>
+        <input type="range" class="vol-slider" min="0" max="1" step="0.05" value="0.8" oninput="setVolume(this.value)">
+        <button class="ctrl-btn" onclick="downloadCurrent()" style="margin-left:auto;font-size:11px;" title="Download">⬇</button>
+      </div>
+    </div>
+
+    <!-- Radio Log -->
+    <div class="panel radio-log">
+      <div class="panel-header">
+        <div class="panel-title">Radio Log</div>
+        <div class="panel-meta" id="logMeta">No session loaded</div>
+      </div>
+      <div class="log-controls">
+        <input type="text" class="search-box" id="searchBox" placeholder="Search..." oninput="filterEntries()">
+        <button class="filter-btn active" id="filterAll" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" id="filterAudio" onclick="setFilter('audio')">Audio Only</button>
+      </div>
+      <div class="radio-entries" id="radioEntries">
+        <div class="empty-state">
+          <div class="empty-icon">📡</div>
+          <div class="empty-text">Select a Grand Prix weekend<br>then tap a session</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<audio id="audioPlayer"></audio>
+
+<script>
+const API = 'https://api.openf1.org/v1';
+
+// Team colours map (driver number → hex)
+const TEAM_COLOURS = {
+  // Ferrari
+  16: '#E8002D', 44: '#E8002D',
+  // Mercedes
+  63: '#00D2BE', 12: '#00D2BE',
+  // Red Bull
+  1: '#3671C6', 11: '#3671C6', 40: '#3671C6',
+  // McLaren
+  4: '#FF8000', 81: '#FF8000',
+  // Aston Martin
+  14: '#229971', 18: '#229971',
+  // Alpine
+  10: '#FF87BC', 31: '#FF87BC',
+  // Williams
+  23: '#64C4FF', 55: '#64C4FF', 2: '#64C4FF',
+  // VCARB / RB
+  22: '#6692FF', 3: '#6692FF',
+  // Haas
+  20: '#B6BABD', 27: '#B6BABD', 50: '#B6BABD',
+  // Sauber / Kick / Audi
+  77: '#52E252', 24: '#52E252',
+  // Cadillac
+  7: '#A50F2D', 65: '#A50F2D',
+};
+
+const DEFAULT_COLOUR = '#e8002d';
+
+const state = {
+  driver: { number: 44, name: 'Lewis Hamilton', team: '' },
+  allDrivers: [],       // [{number, name, team, acronym}]
+  meetings: [],
+  selectedMeeting: null,
+  selectedSessionName: null,
+  radioMessages: [],
+  filteredMessages: [],
+  currentIndex: -1,
+  filter: 'all',
+  activeTab: 'archive',
+  openMeetingKey: null,
+  currentYear: 2024,
+  livePolling: null,
+  liveMessages: [],
+  sessionCache: {}      // meetingKey → sessions array
+};
+
+const audio = document.getElementById('audioPlayer');
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function fmtTime(str) {
+  if (!str) return '–';
+  return new Date(str).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+function fmtAudioTime(s) {
+  if (!s || isNaN(s)) return '0:00';
+  return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+}
+
+function fmtDate(str) {
+  if (!str) return '';
+  return new Date(str).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+}
+
+function driverColour(num) {
+  return TEAM_COLOURS[num] || DEFAULT_COLOUR;
+}
+
+function setAccent(colour) {
+  document.documentElement.style.setProperty('--accent', colour);
+  document.documentElement.style.setProperty('--accent-glow', colour + '80');
+}
+
+// ── DRIVERS ────────────────────────────────────────────────────────────────
+async function loadAllDrivers() {
+  try {
+    // Fetch drivers from all relevant years and deduplicate by driver number
+    const years = [2023, 2024, 2025, 2026];
+    const allRaw = [];
+
+    for (const yr of years) {
+      try {
+        const res = await fetch(`${API}/drivers?session_key=latest`);
+        // We'll use a more reliable approach: fetch per-year from meetings
+      } catch(e) {}
+    }
+
+    // Better approach: get drivers from a known broad session search
+    // Fetch drivers from multiple years
+    const seen = new Map();
+
+    for (const yr of years) {
+      try {
+        const res = await fetch(`${API}/drivers?year=${yr}`);
+        if (!res.ok) continue;
+        const drivers = await res.json();
+        for (const d of drivers) {
+          if (!seen.has(d.driver_number)) {
+            seen.set(d.driver_number, {
+              number: d.driver_number,
+              name: d.full_name || `Driver ${d.driver_number}`,
+              acronym: d.name_acronym || '',
+              team: d.team_name || '',
+              year: yr
+            });
+          } else {
+            // Update with more recent year data
+            const existing = seen.get(d.driver_number);
+            if (yr > existing.year) {
+              seen.set(d.driver_number, {
+                number: d.driver_number,
+                name: d.full_name || existing.name,
+                acronym: d.name_acronym || existing.acronym,
+                team: d.team_name || existing.team,
+                year: yr
+              });
+            }
+          }
+        }
+      } catch(e) { /* skip year */ }
+    }
+
+    const drivers = Array.from(seen.values())
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    state.allDrivers = drivers;
+    populateDriverSelect(drivers);
+
+  } catch(e) {
+    console.error('Failed to load drivers:', e);
+    // Fallback: populate with just Hamilton so app still works
+    populateDriverSelect([{ number: 44, name: 'Lewis Hamilton', acronym: 'HAM', team: 'Ferrari' }]);
+  }
+}
+
+function populateDriverSelect(drivers) {
+  const sel = document.getElementById('driverSelect');
+  sel.innerHTML = drivers.map(d =>
+    `<option value="${d.number}" ${d.number === state.driver.number ? 'selected' : ''}
+      data-name="${d.name}" data-team="${d.team}" data-acronym="${d.acronym}">
+      ${d.number} · ${d.acronym || d.name} — ${d.team || ''}
+    </option>`
+  ).join('');
+
+  // Set initial display
+  const current = drivers.find(d => d.number === state.driver.number);
+  if (current) updateDriverDisplay(current);
+}
+
+function updateDriverDisplay(driver) {
+  const colour = driverColour(driver.number);
+  setAccent(colour);
+
+  document.getElementById('driverNumBadge').textContent = driver.number;
+  document.getElementById('driverNumBadge').style.color = colour;
+  document.getElementById('driverNameDisplay').textContent = driver.name;
+  document.getElementById('driverTeamDisplay').textContent = driver.team || '';
+
+  // Update page title
+  document.title = `${driver.acronym || driver.name} RADIO — F1 Team Radio Archive`;
+}
+
+function onDriverChange() {
+  const sel = document.getElementById('driverSelect');
+  const opt = sel.options[sel.selectedIndex];
+  const num = parseInt(sel.value);
+  const driver = {
+    number: num,
+    name: opt.dataset.name || opt.text,
+    team: opt.dataset.team || '',
+    acronym: opt.dataset.acronym || ''
+  };
+
+  state.driver = driver;
+  updateDriverDisplay(driver);
+
+  // Clear current radio log
+  state.radioMessages = [];
+  state.filteredMessages = [];
+  state.currentIndex = -1;
+  document.getElementById('radioEntries').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">📡</div>
+      <div class="empty-text">Select a Grand Prix weekend<br>then tap a session</div>
+    </div>`;
+  document.getElementById('logMeta').textContent = 'No session loaded';
+  document.getElementById('statTotal').textContent = '–';
+  document.getElementById('statAudio').textContent = '–';
+  document.getElementById('statSession').textContent = '–';
+  document.getElementById('statusText').textContent = 'SELECT SESSION';
+  document.getElementById('npMessage').textContent = 'Select a race weekend and session to load radio';
+  document.getElementById('npMessage').classList.add('empty');
+
+  // Stop audio
+  audio.pause();
+  audio.src = '';
+  document.getElementById('playPauseBtn').textContent = '▶';
+  document.getElementById('waveform').classList.remove('playing');
+}
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', ['archive','live'][i] === tab));
+  tab === 'live' ? startLive() : stopLive();
+}
+
+// ── YEAR ───────────────────────────────────────────────────────────────────
+async function selectYear(year, el) {
+  if (state.currentYear === year && state.meetings.length) return;
+  state.currentYear = year;
+  state.openMeetingKey = null;
+  state.selectedMeeting = null;
+  state.sessionCache = {};
+
+  document.querySelectorAll('.year-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  document.getElementById('gpCount').textContent = '–';
+  document.getElementById('statYear').textContent = year;
+  document.getElementById('raceList').innerHTML = `
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading ${year}...</div>
+    </div>`;
+
+  try {
+    const res = await fetch(`${API}/meetings?year=${year}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const meetings = await res.json();
+    state.meetings = meetings.sort((a,b) => new Date(a.date_start) - new Date(b.date_start));
+    document.getElementById('gpCount').textContent = `${meetings.length} rounds`;
+    renderCalendar();
+  } catch(e) {
+    document.getElementById('raceList').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-text">Failed to load calendar.<br>Open via a web server,<br>not file://</div>
+      </div>`;
+  }
+}
+
+// ── CALENDAR ───────────────────────────────────────────────────────────────
+function renderCalendar() {
+  const list = document.getElementById('raceList');
+  if (!state.meetings.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-text">No rounds found</div></div>';
+    return;
+  }
+
+  list.innerHTML = state.meetings.map((m, i) => {
+    const isOpen = state.openMeetingKey === m.meeting_key;
+    return `
+      <div class="race-weekend ${isOpen ? 'open' : ''}" id="rw-${m.meeting_key}">
+        <div class="race-weekend-header" onclick="toggleWeekend(${m.meeting_key}, ${i})">
+          <div class="rw-round">${i+1}</div>
+          <div class="rw-info">
+            <div class="rw-name">${m.meeting_name}</div>
+            <div class="rw-sub">${m.circuit_short_name || m.location || ''}</div>
+          </div>
+          <div class="rw-date">${fmtDate(m.date_start)}</div>
+          <div class="rw-chevron">▶</div>
+        </div>
+        <div class="session-buttons" id="sess-${m.meeting_key}">
+          <div class="sess-loading"><div class="mini-spin"></div>Loading sessions...</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── WEEKEND TOGGLE ─────────────────────────────────────────────────────────
+async function toggleWeekend(meetingKey, idx) {
+  const el = document.getElementById(`rw-${meetingKey}`);
+  const sessEl = document.getElementById(`sess-${meetingKey}`);
+
+  if (state.openMeetingKey === meetingKey) {
+    el.classList.remove('open');
+    state.openMeetingKey = null;
+    return;
+  }
+
+  if (state.openMeetingKey) {
+    const prev = document.getElementById(`rw-${state.openMeetingKey}`);
+    if (prev) prev.classList.remove('open');
+  }
+
+  state.openMeetingKey = meetingKey;
+  state.selectedMeeting = state.meetings[idx];
+  el.classList.add('open');
+
+  // Use cache if available
+  if (state.sessionCache[meetingKey]) {
+    renderSessionButtons(sessEl, state.sessionCache[meetingKey]);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/sessions?meeting_key=${meetingKey}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const sessions = await res.json();
+    sessions.sort((a,b) => new Date(a.date_start) - new Date(b.date_start));
+    state.sessionCache[meetingKey] = sessions;
+    renderSessionButtons(sessEl, sessions);
+  } catch(e) {
+    sessEl.innerHTML = `<span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);">Error loading sessions</span>`;
+  }
+}
+
+function renderSessionButtons(container, sessions) {
+  if (!sessions.length) {
+    container.innerHTML = `<span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);">No sessions yet</span>`;
+    return;
+  }
+  container.innerHTML = sessions.map(s => `
+    <button class="sess-btn" id="sbtn-${s.session_key}"
+      onclick="loadSession(${s.session_key}, '${s.session_name.replace(/'/g,'&#39;')}', this)">
+      ${s.session_name}
+    </button>`).join('');
+}
+
+// ── LOAD RADIO ─────────────────────────────────────────────────────────────
+async function loadSession(sessionKey, sessionName, btnEl) {
+  const parent = btnEl.closest('.session-buttons');
+  parent.querySelectorAll('.sess-btn').forEach(b => b.classList.remove('active'));
+  btnEl.classList.add('active', 'loading');
+  const origText = btnEl.textContent.trim();
+  btnEl.textContent = '⟳ ' + origText;
+
+  state.selectedSessionName = sessionName;
+  state.currentIndex = -1;
+
+  document.getElementById('logMeta').textContent = 'Loading...';
+  document.getElementById('radioEntries').innerHTML = `
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Fetching radio...</div>
+    </div>`;
+
+  try {
+    const res = await fetch(`${API}/team_radio?session_key=${sessionKey}&driver_number=${state.driver.number}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const radio = await res.json();
+    radio.sort((a,b) => new Date(a.date) - new Date(b.date));
+    state.radioMessages = radio;
+
+    const withAudio = radio.filter(r => r.recording_url).length;
+    document.getElementById('statTotal').textContent = radio.length;
+    document.getElementById('statAudio').textContent = withAudio;
+    document.getElementById('statSession').textContent = sessionName
+      .replace('Practice 1','FP1').replace('Practice 2','FP2').replace('Practice 3','FP3')
+      .replace('Qualifying','QUALI').replace('Race','RACE').replace('Sprint','SPR');
+    document.getElementById('statusText').textContent =
+      `${state.selectedMeeting?.meeting_name || ''} · ${sessionName}`;
+    document.getElementById('logMeta').textContent =
+      `${radio.length} messages · ${withAudio} with audio`;
+
+    filterEntries();
+    if (!radio.length) showToast('No radio messages for this driver/session');
+  } catch(e) {
+    document.getElementById('radioEntries').innerHTML = `
+      <div class="empty-state"><div class="empty-text">Error: ${e.message}</div></div>`;
+    document.getElementById('logMeta').textContent = 'Error';
+  }
+
+  btnEl.classList.remove('loading');
+  btnEl.textContent = origText;
+}
+
+// ── FILTER ─────────────────────────────────────────────────────────────────
+function setFilter(f) {
+  state.filter = f;
+  document.getElementById('filterAll').classList.toggle('active', f === 'all');
+  document.getElementById('filterAudio').classList.toggle('active', f === 'audio');
+  filterEntries();
+}
+
+function filterEntries() {
+  let msgs = state.radioMessages;
+  if (state.filter === 'audio') msgs = msgs.filter(r => r.recording_url);
+  state.filteredMessages = msgs;
+  renderEntries();
+}
+
+function renderEntries() {
+  const container = document.getElementById('radioEntries');
+  const msgs = state.filteredMessages;
+
+  if (!msgs.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📻</div><div class="empty-text">No messages match your filter</div></div>`;
+    return;
+  }
+
+  container.innerHTML = msgs.map((r,i) => `
+    <div class="radio-entry ${i === state.currentIndex ? 'active' : ''}" onclick="playEntry(${i})" data-index="${i}">
+      <div class="entry-time">${fmtTime(r.date)}</div>
+      <div class="entry-text">${r.recording_url ? '🎙 Radio clip' : '📄 No audio'}</div>
+      <div class="entry-play">${i === state.currentIndex ? '■' : (r.recording_url ? '▶' : '–')}</div>
+    </div>`).join('');
+}
+
+// ── PLAYBACK ───────────────────────────────────────────────────────────────
+function playEntry(idx) {
+  const msg = state.filteredMessages[idx];
+  if (!msg) return;
+
+  state.currentIndex = idx;
+  renderEntries();
+
+  const gpName = state.selectedMeeting?.meeting_name || '';
+  document.getElementById('npContext').textContent = `${gpName} · ${state.selectedSessionName || ''}`;
+  document.getElementById('npMessage').textContent =
+    `📡 ${state.driver.name} — Message ${idx+1} of ${state.filteredMessages.length} · ${fmtTime(msg.date)}`;
+  document.getElementById('npMessage').classList.remove('empty');
+
+  if (msg.recording_url) {
+    audio.src = msg.recording_url;
+    audio.volume = parseFloat(document.querySelector('.vol-slider').value);
+    audio.play().catch(() => showToast('Audio blocked — try clicking Play again'));
+    document.getElementById('playPauseBtn').textContent = '⏸';
+    document.getElementById('waveform').classList.add('playing');
+  } else {
+    audio.src = '';
+    document.getElementById('playPauseBtn').textContent = '▶';
+    document.getElementById('waveform').classList.remove('playing');
+    showToast('No audio for this message');
+  }
+
+  const el = document.querySelector(`[data-index="${idx}"]`);
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function togglePlay() {
+  if (audio.src && !audio.paused) {
+    audio.pause();
+    document.getElementById('playPauseBtn').textContent = '▶';
+    document.getElementById('waveform').classList.remove('playing');
+  } else if (audio.src) {
+    audio.play();
+    document.getElementById('playPauseBtn').textContent = '⏸';
+    document.getElementById('waveform').classList.add('playing');
+  } else if (state.filteredMessages.length) {
+    playEntry(0);
+  }
+}
+
+function playPrev() { if (state.currentIndex > 0) playEntry(state.currentIndex - 1); }
+function playNext() { if (state.currentIndex < state.filteredMessages.length - 1) playEntry(state.currentIndex + 1); }
+
+function seekAudio(e) {
+  if (!audio.duration) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+}
+
+function setVolume(v) { audio.volume = v; }
+
+function downloadCurrent() {
+  const msg = state.filteredMessages[state.currentIndex];
+  if (msg?.recording_url) {
+    const a = document.createElement('a');
+    a.href = msg.recording_url;
+    a.download = `driver${state.driver.number}_${msg.date}.mp3`;
+    a.click();
+  } else {
+    showToast('No audio to download');
+  }
+}
+
+audio.addEventListener('timeupdate', () => {
+  const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('timeDisplay').textContent =
+    `${fmtAudioTime(audio.currentTime)} / ${fmtAudioTime(audio.duration)}`;
+});
+
+audio.addEventListener('ended', () => {
+  document.getElementById('playPauseBtn').textContent = '▶';
+  document.getElementById('waveform').classList.remove('playing');
+  setTimeout(() => playNext(), 300);
+});
+
+// ── LIVE ───────────────────────────────────────────────────────────────────
+async function startLive() {
+  document.getElementById('livePanel').classList.add('visible');
+  document.getElementById('statusPill').classList.add('live');
+  document.getElementById('statusText').textContent = 'LIVE';
+  state.liveMessages = [];
+  await pollLive();
+  state.livePolling = setInterval(pollLive, 15000);
+}
+
+function stopLive() {
+  if (state.livePolling) clearInterval(state.livePolling);
+  state.livePolling = null;
+  document.getElementById('livePanel').classList.remove('visible');
+  document.getElementById('statusPill').classList.remove('live');
+  document.getElementById('statusText').textContent = state.selectedSessionName
+    ? `${state.selectedMeeting?.meeting_name} · ${state.selectedSessionName}`
+    : 'SELECT SESSION';
+}
+
+async function pollLive() {
+  try {
+    const sessRes = await fetch(`${API}/sessions?session_key=latest`);
+    const sessions = await sessRes.json();
+    if (!sessions.length) return;
+    const sess = sessions[0];
+
+    document.getElementById('liveSessionInfo').textContent =
+      `${sess.meeting_name} · ${sess.session_name}`;
+
+    const radioRes = await fetch(`${API}/team_radio?session_key=${sess.session_key}&driver_number=${state.driver.number}`);
+    const msgs = await radioRes.json();
+
+    if (msgs.length) {
+      const newMsgs = msgs.filter(m => !state.liveMessages.find(x => x.date === m.date));
+      if (newMsgs.length) {
+        state.liveMessages = [...newMsgs.reverse(), ...state.liveMessages].slice(0, 50);
+        renderLive();
+      }
+    } else if (!state.liveMessages.length) {
+      document.getElementById('liveEntries').innerHTML = `
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);padding:8px;">
+          No radio for ${state.driver.name} in ${sess.session_name}. Check during a race weekend.
+        </div>`;
+    }
+  } catch(e) {
+    document.getElementById('liveSessionInfo').textContent = 'Connection error – retrying...';
+  }
+}
+
+function renderLive() {
+  document.getElementById('liveEntries').innerHTML = state.liveMessages.map(m => `
+    <div class="live-entry">
+      <div class="live-time">${fmtTime(m.date)}</div>
+      <div class="live-text">📡 ${state.driver.acronym || state.driver.name} Radio</div>
+      ${m.recording_url ? `<button class="live-play-btn" onclick="playLiveAudio('${m.recording_url}')">▶ Play</button>` : ''}
+    </div>`).join('');
+}
+
+function playLiveAudio(url) {
+  audio.src = url;
+  audio.volume = parseFloat(document.querySelector('.vol-slider').value);
+  audio.play().catch(() => showToast('Audio blocked by browser'));
+  document.getElementById('waveform').classList.add('playing');
+  document.getElementById('npMessage').textContent = `📡 Live radio — ${state.driver.name}`;
+  document.getElementById('npMessage').classList.remove('empty');
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadAllDrivers();
+  await selectYear(2024, null);
+});
+</script>
+</body>
+</html>
